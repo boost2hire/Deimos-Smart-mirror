@@ -1,0 +1,25 @@
+# --- Core backend ---
+fastapi
+uvicorn[standard]
+
+# --- Environment ---
+python-dotenv
+
+# --- WebSocket / async ---
+websockets
+wsproto
+
+# --- Audio / Voice ---
+pvporcupine
+sounddevice
+numpy
+pyttsx3
+
+# --- AI / GPT ---
+openai
+
+# --- YouTube ---
+yt-dlp
+
+# --- Utilities ---
+requests

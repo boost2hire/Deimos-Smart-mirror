@@ -72,6 +72,11 @@ To connect a domain, navigate to Project > Settings > Domains and click Connect 
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
 
+cd backend
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+
 
 # How to run Backend
 uvicorn app:app --workers 1 --host 0.0.0.0 --port 8000
