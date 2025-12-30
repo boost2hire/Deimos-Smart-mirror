@@ -1,0 +1,358 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 187 92% 53%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 187 92% 53%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 187 92% 53%;
+
+    --radius: 1rem;
+
+    /* Smart Mirror Custom Tokens */
+    --glass-bg: 0 0% 100% / 0.05;
+    --glass-border: 0 0% 100% / 0.1;
+    --glow-primary: 187 92% 53%;
+    --glow-secondary: 199 89% 48%;
+    
+    /* Gradient definitions */
+    --gradient-glow: radial-gradient(circle, hsl(var(--primary) / 0.4) 0%, transparent 70%);
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100% / 0.08) 0%, hsl(0 0% 100% / 0.02) 100%);
+  }
+
+  .dark {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html, body, #root {
+    @apply h-full;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl;
+    box-shadow: 
+      0 8px 32px 0 rgba(0, 0, 0, 0.37),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .glass-card-lg {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl;
+    box-shadow: 
+      0 8px 32px 0 rgba(0, 0, 0, 0.37),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent;
+  }
+
+  .glow-cyan {
+    box-shadow: 
+      0 0 20px rgba(34, 211, 238, 0.3),
+      0 0 40px rgba(34, 211, 238, 0.2),
+      0 0 60px rgba(34, 211, 238, 0.1);
+  }
+
+  .glow-cyan-intense {
+    box-shadow: 
+      0 0 30px rgba(34, 211, 238, 0.5),
+      0 0 60px rgba(34, 211, 238, 0.4),
+      0 0 90px rgba(34, 211, 238, 0.3);
+  }
+}
+
+@layer utilities {
+  .animate-pulse-glow {
+    animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-mic-pulse {
+    animation: micPulse 1.5s ease-in-out infinite;
+  }
+
+  .animate-ring-expand {
+    animation: ringExpand 1.5s ease-out infinite;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes micPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 
+      0 0 0 0 rgba(34, 211, 238, 0.4),
+      0 0 20px rgba(34, 211, 238, 0.3);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 
+      0 0 0 15px rgba(34, 211, 238, 0),
+      0 0 40px rgba(34, 211, 238, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 
+      0 0 0 0 rgba(34, 211, 238, 0.4),
+      0 0 20px rgba(34, 211, 238, 0.3);
+  }
+}
+
+@keyframes ringExpand {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+/* === MIC ICON CORE === */
+.mic-icon-wrapper {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 18px rgba(255,255,255,0.25);
+  animation: idle-breathe 3s ease-in-out infinite;
+}
+
+.mic-icon-wrapper.listening {
+  background: rgba(0, 255, 255, 0.22);
+  box-shadow: 0 0 35px rgba(0,255,255,0.7);
+}
+
+.mic-icon-wrapper.speaking {
+  background: rgba(0, 255, 255, 0.32);
+  box-shadow: 0 0 50px rgba(0,255,255,1);
+}
+
+/* === WAVES === */
+.mic-wave {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 9999px;
+  border: 2px solid rgba(0, 255, 255, 0.4);
+  animation: wave 2.4s ease-out infinite;
+}
+
+.mic-wave.fast {
+  animation-duration: 1.2s;
+}
+
+.mic-wave.delay {
+  animation-delay: 0.6s;
+}
+
+.mic-wave.delay-2 {
+  animation-delay: 1.2s;
+}
+
+/* === ANIMATIONS === */
+@keyframes wave {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes idle-breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+/* ================= MIC CORE ================= */
+
+.mic-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(255,255,255,0.25);
+  animation: idle-breathe 3s ease-in-out infinite;
+}
+
+.mic-icon-wrapper.thinking {
+  animation: none;
+  box-shadow: 0 0 22px rgba(0,255,255,0.35);
+}
+
+/* ================= THINKING BARS ================= */
+
+.thinking-bars {
+  position: absolute;
+  bottom: -18px;
+  display: flex;
+  gap: 6px;
+}
+
+.thinking-bars span {
+  width: 4px;
+  height: 14px;
+  background: rgba(0,255,255,0.9);
+  border-radius: 2px;
+  animation: think-pulse 1.2s ease-in-out infinite;
+}
+
+.thinking-bars span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.thinking-bars span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes think-pulse {
+  0%, 100% {
+    transform: scaleY(0.4);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* ================= WAVES ================= */
+
+.mic-wave {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 9999px;
+  border: 2px solid rgba(0,255,255,0.4);
+  animation: wave 2.4s ease-out infinite;
+}
+
+.mic-wave.fast {
+  animation-duration: 1.2s;
+}
+
+.mic-wave.delay {
+  animation-delay: 0.6s;
+}
+
+@keyframes wave {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes idle-breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* iframe {
+  object-fit: cover;
+}
+
+iframe {
+  opacity: 0.4;
+  filter: blur(8px);
+} */
