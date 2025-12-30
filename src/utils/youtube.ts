@@ -1,18 +1,35 @@
 export async function searchYouTube(
   query: string
 ): Promise<string | null> {
-  const res = await fetch(
-    `/api/youtube/search?q=${encodeURIComponent(query)}`
-  );
+  try {
+    const res = await fetch(
+      `http://127.0.0.1:8000/api/youtube/search?q=${encodeURIComponent(query)}`
+    );
 
-  const text = await res.text();
+    const contentType = res.headers.get("content-type");
+    const text = await res.text();
 
-  // 🛡️ Guard: backend not ready / invalid response
-  if (!res.ok || !text || text[0] !== "{") {
-    console.error("YouTube search failed:", text);
+    // ❌ Backend error or wrong response type
+    if (!res.ok || !contentType?.includes("application/json")) {
+      console.error("YouTube search failed:", {
+        status: res.status,
+        contentType,
+        response: text,
+      });
+      return null;
+    }
+
+    const data = JSON.parse(text);
+
+    // ❌ Valid JSON but missing videoId
+    if (!data?.videoId) {
+      console.warn("YouTube search returned no videoId:", data);
+      return null;
+    }
+
+    return data.videoId;
+  } catch (err) {
+    console.error("YouTube search exception:", err);
     return null;
   }
-
-  const data = JSON.parse(text);
-  return data.videoId ?? null;
 }
