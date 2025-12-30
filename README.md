@@ -72,11 +72,67 @@ To connect a domain, navigate to Project > Settings > Domains and click Connect 
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
 
+## Quick Start
+
+### Option 1: Automated Setup (Recommended)
+
+**Windows:**
+```powershell
+.\setup.ps1
+```
+
+**Linux/Mac:**
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+### Option 2: Manual Setup
+
+#### Frontend Setup
+```bash
+npm install
+```
+
+#### Backend Setup
+```bash
 cd backend
 python -m venv venv
+
+# Windows
 venv\Scripts\activate
+
+# Linux/Mac
+source venv/bin/activate
+
 pip install -r requirements.txt
+```
 
+#### Environment Variables
+Create `backend/.env` file:
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+PICOVOICE_ACCESS_KEY=pHuGqjUN87BobgYb648sTQ+6goqkj9nKAMNNVPEETaN9RzshEgoanA==
+```
 
-# How to run Backend
+## Running the Application
+
+### Start Backend (Terminal 1)
+```bash
+cd backend
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Linux/Mac
 uvicorn app:app --workers 1 --host 0.0.0.0 --port 8000
+```
+
+### Start Frontend (Terminal 2)
+```bash
+npm run dev
+```
+
+- Frontend: http://localhost:8080
+- Backend: http://localhost:8000
+
+## Detailed Installation
+
+See [INSTALLATION.md](INSTALLATION.md) for complete installation guide and troubleshooting.
