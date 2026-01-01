@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import PhotoGallery from "./pages/PhotoGallery"; // ✅ ADD THIS
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              {/* 📱 Phone gallery (opens after QR scan) */}
+            <Route path="/gallery" element={<PhotoGallery />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

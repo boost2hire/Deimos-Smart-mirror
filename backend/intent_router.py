@@ -14,6 +14,14 @@ def route_intent(text: str):
     # ⏰ Alarm
     if "set alarm" in t:
         return {"type": "set_alarm", "text": t}
+    
+    # ⏰ Stop alarm
+    if "stop alarm" in t or "dismiss alarm" in t:
+        return {"type": "stop_alarm"}
+
+    # 📸 Take photo
+    if "take photo" in t or "take a photo" in t or "click photo" in t:
+        return { "type": "take_photo" }
 
     # 🌤 Weather
     if "weather" in t:

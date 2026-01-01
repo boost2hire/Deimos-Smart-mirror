@@ -5,15 +5,16 @@ import WeatherCard from "./WeatherCard";
 import ScheduleCard from "./ScheduleCard";
 import MicGlow from "../MicGlow";
 import YouTubePlayer from "../YouTubePlayer";
+import AlarmOverlay from "../AlarmOverlay";
+import PhotoQR from "../PhotoQR";
 
 import { useLumiState } from "@/hooks/useLumiState";
+import { useAlarmSound } from "@/hooks/useAlarmSound";
 import { searchYouTube } from "@/utils/youtube";
 
 const SmartMirror = () => {
   /* ---------------- Lumi State ---------------- */
   const lumiState = useLumiState();
-  // window.addEventListener("lumi-response", handler);
-
 
   const listening = lumiState === "listening";
   const speaking = lumiState === "speaking";
@@ -23,21 +24,78 @@ const SmartMirror = () => {
   const [videoId, setVideoId] = useState<string | null>(null);
   const [musicPlaying, setMusicPlaying] = useState(false);
 
+  /* ---------------- Alarm State ---------------- */
+  const [alarmTime, setAlarmTime] = useState<string>("No Alarms set");
+  const [alarmRinging, setAlarmRinging] = useState(false);
+
+    /* ---------------- Take Photo ---------------- */
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+useEffect(() => {
+  const onPhotoReady = (e: Event) => {
+    const ce = e as CustomEvent;
+    setPhotoUrl(ce.detail);
+  };
+
+  window.addEventListener("lumi-photo-ready", onPhotoReady);
+  return () => window.removeEventListener("lumi-photo-ready", onPhotoReady);
+}, []);
+
+useEffect(() => {
+  if (!photoUrl) return;
+  const t = setTimeout(() => setPhotoUrl(null), 30000);
+  return () => clearTimeout(t);
+}, [photoUrl]);
+
+
+  /* 🔊 Alarm Sound */
+  useAlarmSound(alarmRinging);
+
+
+  /* ---------------- Listen to Alarm Events ---------------- */
+  useEffect(() => {
+    const onAlarmSet = (e: Event) => {
+      const ce = e as CustomEvent;
+      if (ce.detail) {
+        setAlarmTime(ce.detail);
+        setAlarmRinging(false);
+      }
+    };
+
+    const onAlarmTriggered = () => {
+      setAlarmTime("⏰ Alarm Ringing");
+      setAlarmRinging(true);
+    };
+
+    const onAlarmStopped = () => {
+      setAlarmRinging(false);
+      setAlarmTime("No Alarms set");
+    };
+
+    window.addEventListener("lumi-alarm-set", onAlarmSet);
+    window.addEventListener("lumi-alarm-triggered", onAlarmTriggered);
+    window.addEventListener("lumi-alarm-stopped", onAlarmStopped);
+
+    return () => {
+      window.removeEventListener("lumi-alarm-set", onAlarmSet);
+      window.removeEventListener("lumi-alarm-triggered", onAlarmTriggered);
+      window.removeEventListener("lumi-alarm-stopped", onAlarmStopped);
+    };
+  }, []);
+
   /* ---------------- Listen to Lumi Actions ---------------- */
   useEffect(() => {
     const handler = async (e: Event) => {
-      const customEvent = e as CustomEvent;
-      const response = customEvent.detail;
-
+      const ce = e as CustomEvent;
+      const response = ce.detail;
       if (!response) return;
 
       if (response.action === "play_music") {
-       const id = await searchYouTube(response.query);
+        const id = await searchYouTube(response.query);
         if (id) {
           setVideoId(id);
           setMusicPlaying(true);
         }
-
       }
 
       if (response.action === "pause_music") {
@@ -79,7 +137,7 @@ const SmartMirror = () => {
         {/* Top Row */}
         <div className="flex justify-between items-start">
           <div className="w-full max-w-sm">
-            <TimeCard alarmTime="No Alarms set" />
+            <TimeCard alarmTime={alarmTime} />
           </div>
 
           <div className="w-full max-w-sm">
@@ -113,6 +171,12 @@ const SmartMirror = () => {
           </div>
         </div>
       </div>
+
+      {/* 🚨 Alarm Overlay */}
+      <AlarmOverlay active={alarmRinging} />
+
+      <PhotoQR url={photoUrl} />
+
     </div>
   );
 };

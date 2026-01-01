@@ -80,3 +80,8 @@ pip install -r requirements.txt
 
 # How to run Backend
 uvicorn app:app --workers 1 --host 0.0.0.0 --port 8000
+
+
+cd C:\Users\DELL\Documents\lumi-mirror-display-main\backend
+
+cloudflared.exe tunnel run --token eyJhIjoiYWRhYTg3ODA5YzU0Mjc1OGIwNGY4YWE3ZTIxZjU5ZGIiLCJ0IjoiM2U0YjlmODUtYTQ3MC00ZjgxLWJmMzItMTAxOTI2OGMwZmVjIiwicyI6Ik1qTXlZemMwWXpJdFlqbG1PQzAwTWpoakxXSTRabVF0Tm1ZMU9USTVZelV5TkRrdyJ9
