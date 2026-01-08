@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/supabaseClient";
 import type { CSSProperties } from "react";
 
-const BACKEND_BASE = "http://192.168.31.75:8000"; // LAN backend
+const BACKEND_BASE = import.meta.env.VITE_BACKEND_URL;
 
 export default function DeviceLoginCallback() {
   const [status, setStatus] = useState("Linking device…");

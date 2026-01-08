@@ -12,7 +12,7 @@ import DeviceLoginQR from "../DeviceLoginQR";
 import { useLumiState } from "@/hooks/useLumiState";
 import { useAlarmSound } from "@/hooks/useAlarmSound";
 import { searchYouTube } from "@/utils/youtube";
-// import GalleryWidget from "./GalleryWidget";
+
 import BottomDock from "@/components/smart-mirror/BottomDock";
 import { log } from "console";
 import FeatureMenu from "@/components/smart-mirror/BottomDock";
@@ -62,7 +62,6 @@ useEffect(() => {
   (async () => {
     const sessionId = await createGallerySession();
     setGallerySessionId(sessionId);
-    console.log(`http://localhost:5173/gallery/session/${sessionId}`);
   })();
 }, []);
 
@@ -169,7 +168,6 @@ useEffect(() => {
           }}
         />
       </div>
-               {/* <GalleryWidget /> */}
       {/* Main Content */}
       <div className="relative z-10 flex-1 flex flex-col p-6 lg:p-10">
         {/* Top Row */}

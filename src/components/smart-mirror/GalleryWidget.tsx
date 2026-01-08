@@ -12,7 +12,8 @@
 //   const [index, setIndex] = useState(0);
 
 //   useEffect(() => {
-//     fetch(`http://localhost:8000/gallery?device_id=${DEVICE_ID}`)
+//    fetch(`${import.meta.env.VITE_API_BASE}/gallery?device_id=${DEVICE_ID}`)
+
 //       .then(res => res.json())
 //       .then((data: GalleryResponse) => {
 //         if (data.images) setImages(data.images);
