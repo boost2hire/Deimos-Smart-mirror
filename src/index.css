@@ -348,11 +348,11 @@
   }
 }
 
-/* iframe {
-  object-fit: cover;
+@keyframes pulseSlow {
+  0%, 100% { opacity: 0.6 }
+  50% { opacity: 1 }
 }
 
-iframe {
-  opacity: 0.4;
-  filter: blur(8px);
-} */
+.animate-pulse-slow {
+  animation: pulseSlow 3s ease-in-out infinite;
+}

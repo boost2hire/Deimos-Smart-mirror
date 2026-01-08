@@ -6,13 +6,37 @@ import ScheduleCard from "./ScheduleCard";
 import MicGlow from "../MicGlow";
 import YouTubePlayer from "../YouTubePlayer";
 import AlarmOverlay from "../AlarmOverlay";
-import PhotoQR from "../PhotoQR";
+import GalleryQR from "../PhotoQR";
+import DeviceLoginQR from "../DeviceLoginQR";
 
 import { useLumiState } from "@/hooks/useLumiState";
 import { useAlarmSound } from "@/hooks/useAlarmSound";
 import { searchYouTube } from "@/utils/youtube";
+// import GalleryWidget from "./GalleryWidget";
+import BottomDock from "@/components/smart-mirror/BottomDock";
+import { log } from "console";
+import FeatureMenu from "@/components/smart-mirror/BottomDock";
+
+const API_BASE = import.meta.env.VITE_API_BASE;
+const DEVICE_ID = "LUMI-001";
+
+async function createGallerySession() {
+  const res = await fetch(
+    `${API_BASE}/gallery/session/create-session?device_id=${DEVICE_ID}`,
+    {
+      method: "POST",
+      credentials: "include",
+    }
+  );
+
+  const data = await res.json();
+  console.log("✅ SESSION CREATED:", data.session_id);
+  return data.session_id;
+}
 
 const SmartMirror = () => {
+
+    const [showQR, setShowQR] = useState(false);
   /* ---------------- Lumi State ---------------- */
   const lumiState = useLumiState();
 
@@ -30,6 +54,20 @@ const SmartMirror = () => {
 
     /* ---------------- Take Photo ---------------- */
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [gallerySessionId, setGallerySessionId] = useState<string | null>(null);
+
+ const isDeviceLinked = false;
+
+useEffect(() => {
+  (async () => {
+    const sessionId = await createGallerySession();
+    setGallerySessionId(sessionId);
+    console.log(`http://localhost:5173/gallery/session/${sessionId}`);
+  })();
+}, []);
+
+
+
 
 useEffect(() => {
   const onPhotoReady = (e: Event) => {
@@ -131,7 +169,7 @@ useEffect(() => {
           }}
         />
       </div>
-
+               {/* <GalleryWidget /> */}
       {/* Main Content */}
       <div className="relative z-10 flex-1 flex flex-col p-6 lg:p-10">
         {/* Top Row */}
@@ -175,7 +213,28 @@ useEffect(() => {
       {/* 🚨 Alarm Overlay */}
       <AlarmOverlay active={alarmRinging} />
 
-      <PhotoQR url={photoUrl} />
+       <div className="flex justify-end">
+        <FeatureMenu />
+       </div>
+
+     {/* <GalleryQR deviceId="LUMI-001" />
+            <button
+          onClick={() => {
+            alert("CLICKED");
+            console.log("CLICKED BUTTON");
+          }}
+          className="absolute bottom-6 right-6 bg-white text-black px-4 py-2 rounded z-50"
+        >
+          Open Gallery on Phone
+        </button> */}
+{/* 
+        {!isDeviceLinked && (
+          // <div className="absolute inset-0 flex items-center justify-center bg-black z-50">
+          //   <DeviceLoginQR />
+          // </div>
+          <DeviceLoginQR />
+        )} */}
+
 
     </div>
   );

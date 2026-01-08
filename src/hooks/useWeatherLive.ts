@@ -15,7 +15,8 @@ export function useWeatherLive() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("http://localhost:8000/api/weather");
+        const res = await fetch(`${import.meta.env.VITE_API_BASE}/api/weather`);
+
       
 
         const json = await res.json();

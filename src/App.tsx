@@ -6,7 +6,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import PhotoGallery from "./pages/PhotoGallery"; // ✅ ADD THIS
+import GallerySession from "./pages/GallerySession"; // ✅ ADD THIS
+import LoginPage from "./pages/LoginPage";
+import LinkedPage from "./pages/LinkedPage";
+import MirrorHome from "./MirrorHome";
+import DeviceLoginQR from "./components/DeviceLoginQR";
+import DeviceLogin from "./pages/DeviceLogin";
+import DeviceLoginCallback from "./pages/DeviceLoginCallback";
+
 
 const queryClient = new QueryClient();
 
@@ -16,15 +23,34 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+              <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              {/* 📱 Phone gallery (opens after QR scan) */}
-            <Route path="/gallery" element={<PhotoGallery />} />
-            <Route path="*" element={<NotFound />} />
+            {/* <Route path="/" element={<MirrorHome />} /> */}
+
+            {/* 📱 Phone gallery (QR scan target) */}
+            {/* <Route path="/gallery/view/:sessionId" element={<GallerySession />} /> */}
+                {/* <Route path="/login" element={<LoginPage />} />
+                <Route path="/linked" element={<LinkedPage />} />
+                <Route path="/mirror" element={<Index />} />
+               <Route path="*" element={<NotFound />} /> */}
+
+               
+             {/* MIRROR */}
+            <Route path="/" element={<DeviceLoginQR />} />
+            <Route path="/mirror" element={<Index />} />
+
+            {/* PHONE LOGIN */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/linked" element={<LinkedPage />} />
+             <Route path="/device-login" element={<DeviceLogin />} />
+             <Route path="/device-login/callback" element={<DeviceLoginCallback />} />
+
+              <Route path="*" element={<NotFound />} />
+
+
           </Routes>
         </BrowserRouter>
+
       </TooltipProvider>
     </QueryClientProvider>
   </HelmetProvider>
