@@ -15,6 +15,11 @@ export function useWeatherLive() {
   useEffect(() => {
     async function load() {
       try {
+            console.log(
+          "[ENV CHECK] VITE_API_BASE =",
+          import.meta.env.VITE_API_BASE
+        );
+
         const res = await fetch(`${import.meta.env.VITE_API_BASE}/api/weather`);
 
       
