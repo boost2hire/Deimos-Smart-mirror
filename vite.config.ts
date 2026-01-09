@@ -7,7 +7,6 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0",        // allow LAN / ngrok
     port: 8080,
-
     // ✅ allow ngrok + local
     allowedHosts: [
       ".ngrok-free.dev",

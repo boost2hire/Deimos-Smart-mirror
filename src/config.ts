@@ -1,3 +1,5 @@
-// src/config.ts
-export const BACKEND_PUBLIC_URL =
-  "https://photos.refboosts.com/gallery";
+export const API_BASE =
+  import.meta.env.VITE_API_BASE || "https://api.refboosts.com";
+
+export const WS_BASE =
+  API_BASE.replace("https://", "wss://").replace("http://", "ws://");
