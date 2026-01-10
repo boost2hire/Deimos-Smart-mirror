@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 import { supabase } from "@/supabaseClient";
 
+const FRONTEND_BASE =
+  import.meta.env.VITE_FRONTEND_BASE || window.location.origin;
+
 export default function DeviceLogin() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -14,11 +17,11 @@ export default function DeviceLogin() {
     // 🔒 Store device code BEFORE OAuth
     localStorage.setItem("device_login_code", code);
 
-    // 🔥 Start Supabase OAuth (NO state, NO hacks)
+    // 🔥 Start Supabase OAuth (PUBLIC-safe redirect)
     supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/device-login/callback`,
+        redirectTo: `${FRONTEND_BASE}/device-login/callback`,
       },
     });
   }, []);
