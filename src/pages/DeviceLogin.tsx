@@ -28,10 +28,10 @@ export default function DeviceLogin() {
   //   });
   // }, []);
 
-  supabase.auth.signInWithOAuth({
+supabase.auth.signInWithOAuth({
   provider: "google",
   options: {
-    redirectTo: "https://lumi.refboosts.com/device-login/callback",
+    redirectTo: `${FRONTEND_BASE}/device-login/callback`,
   },
 });
   }, []);
