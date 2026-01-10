@@ -18,13 +18,24 @@ export default function DeviceLogin() {
     localStorage.setItem("device_login_code", code);
 
     // 🔥 Start Supabase OAuth (PUBLIC-safe redirect)
-    supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${FRONTEND_BASE}/device-login/callback`,
-      },
-    });
+    console.log("OAUTH REDIRECT TO →", `${FRONTEND_BASE}/device-login/callback`);
+
+  //   supabase.auth.signInWithOAuth({
+  //     provider: "google",
+  //     options: {
+  //       redirectTo: `${FRONTEND_BASE}/device-login/callback`,
+  //     },
+  //   });
+  // }, []);
+
+  supabase.auth.signInWithOAuth({
+  provider: "google",
+  options: {
+    redirectTo: "https://lumi.refboosts.com/device-login/callback",
+  },
+});
   }, []);
+
 
   return (
     <div style={styles.page}>
