@@ -5,36 +5,25 @@ const FRONTEND_BASE =
   import.meta.env.VITE_FRONTEND_BASE || window.location.origin;
 
 export default function DeviceLogin() {
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get("code");
 
-    if (!code) {
-      alert("Invalid device login link");
-      return;
-    }
+  if (!code) {
+    alert("Invalid device login link");
+    return;
+  }
 
-    // 🔒 Store device code BEFORE OAuth
-    localStorage.setItem("device_login_code", code);
+  localStorage.setItem("device_login_code", code);
 
-    // 🔥 Start Supabase OAuth (PUBLIC-safe redirect)
-    console.log("OAUTH REDIRECT TO →", `${FRONTEND_BASE}/device-login/callback`);
+  supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${FRONTEND_BASE}/device-login/callback`,
+    },
+  });
+}, []);
 
-  //   supabase.auth.signInWithOAuth({
-  //     provider: "google",
-  //     options: {
-  //       redirectTo: `${FRONTEND_BASE}/device-login/callback`,
-  //     },
-  //   });
-  // }, []);
-
-supabase.auth.signInWithOAuth({
-  provider: "google",
-  options: {
-    redirectTo: `${FRONTEND_BASE}/device-login/callback`,
-  },
-});
-  }, []);
 
 
   return (

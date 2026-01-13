@@ -26,6 +26,7 @@ export default function DeviceLoginCallback() {
           setStatus("✅ Device already linked. You can close this.");
           return;
         }
+     console.log("BACKEND_BASE =", BACKEND_BASE);
 
         // 3️⃣ Link device
         const res = await fetch(`${BACKEND_BASE}/auth/device/complete`, {

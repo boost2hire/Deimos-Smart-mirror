@@ -22,7 +22,7 @@ const VoiceMic = ({
     if (!isActive) {
       setIsActive(true);
       setIsListening(true);
-      setStatus("listening");
+      setStatus("listening"); 
       onWakeWordDetected?.();
 
       // Auto-stop after 5 seconds for demo

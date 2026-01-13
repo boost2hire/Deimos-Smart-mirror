@@ -5,25 +5,28 @@ import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "0.0.0.0",        // allow LAN / ngrok
+    host: "0.0.0.0",
     port: 8080,
-    // ✅ allow ngrok + local
     allowedHosts: [
       ".ngrok-free.dev",
       "localhost",
       "127.0.0.1",
     ],
 
-    // ✅ proxy EVERYTHING that talks to backend
     proxy: {
+      // ✅ AUTH APIs
       "/auth": {
         target: "http://127.0.0.1:8000",
         changeOrigin: true,
       },
-      "/gallery": {
+
+      // ✅ ONLY gallery *API*, not gallery *pages*
+      "/gallery/session": {
         target: "http://127.0.0.1:8000",
         changeOrigin: true,
       },
+
+      // ✅ other APIs
       "/api": {
         target: "http://127.0.0.1:8000",
         changeOrigin: true,

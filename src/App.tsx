@@ -13,6 +13,7 @@ import MirrorHome from "./MirrorHome";
 import DeviceLoginQR from "./components/DeviceLoginQR";
 import DeviceLogin from "./pages/DeviceLogin";
 import DeviceLoginCallback from "./pages/DeviceLoginCallback";
+import PhotosPage from "./pages/PhotosPage";
 
 
 const queryClient = new QueryClient();
@@ -44,6 +45,9 @@ const App = () => (
             <Route path="/linked" element={<LinkedPage />} />
              <Route path="/device-login" element={<DeviceLogin />} />
              <Route path="/device-login/callback" element={<DeviceLoginCallback />} />
+              <Route path="/photos" element={<PhotosPage />} />
+              <Route path="/gallery/view/:sessionId" element={<GallerySession />} />
+
 
               <Route path="*" element={<NotFound />} />
 

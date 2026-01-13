@@ -1,82 +1,48 @@
-import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
-type ImageItem = {
+const API_BASE = import.meta.env.VITE_BACKEND_URL;
+
+type GalleryImage = {
   name: string;
   url: string;
 };
 
-/**
- * IMPORTANT:
- * Set this in .env
- * VITE_API_BASE=http://192.168.31.75:8000
- * or later:
- * VITE_API_BASE=https://api.yourdomain.com
- */
-const API_BASE = import.meta.env.VITE_API_BASE;
+type GalleryResponse = {
+images: GalleryImage[];
+};
 
 export default function GallerySession() {
   const { sessionId } = useParams<{ sessionId: string }>();
-  const [images, setImages] = useState<ImageItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [images, setImages] = useState<string[]>([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!sessionId) {
-      console.error("❌ sessionId is missing");
-      setError("Invalid gallery session");
-      setLoading(false);
-      return;
-    }
+    if (!sessionId) return;
 
-    const loadGallery = async () => {
-      try {
-        const res = await fetch(
-          `${API_BASE}/gallery/session/${sessionId}`,
-          {
-            method: "GET",
-            credentials: "include", // 🔑 REQUIRED for auth / cookies
-          }
-        );
-
-        if (!res.ok) {
-          throw new Error(`Failed with status ${res.status}`);
-        }
-
-        const data = await res.json();
-        setImages(data.images || []);
-      } catch (err) {
-        console.error("Gallery fetch failed", err);
-        setError("Failed to load gallery");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadGallery();
+    fetch(`${API_BASE}/gallery/session/${sessionId}`)
+      .then(r => {
+        if (!r.ok) throw new Error("Session expired");
+        return r.json();
+      })
+      .then((d: GalleryResponse) => {
+        setImages(d.images.map(i => i.url));
+      })
+      .catch(() => setError("Session expired or invalid"));
   }, [sessionId]);
 
-  if (loading) {
-    return <div className="text-white p-6">Loading photos...</div>;
-  }
-
   if (error) {
-    return <div className="text-red-400 p-6">{error}</div>;
-  }
-
-  if (!images.length) {
-    return <div className="text-white p-6">No photos found</div>;
+    return <div className="p-6 text-center text-white">{error}</div>;
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3 p-4 bg-black min-h-screen">
-      {images.map(img => (
+    <div className="min-h-screen bg-black p-4 grid grid-cols-2 gap-4">
+      {images.map((url, i) => (
         <img
-          key={img.name}
-          src={`${API_BASE}/gallery/image?url=${encodeURIComponent(img.url)}`}
-          className="rounded-lg"
-          loading="lazy"
-          alt={img.name}
+          key={i}
+          src={url}
+          className="rounded-xl"
+          alt="gallery"
         />
       ))}
     </div>

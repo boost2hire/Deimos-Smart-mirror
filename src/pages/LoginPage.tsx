@@ -3,115 +3,137 @@ import QRCode from "react-qr-code";
 import { useNavigate } from "react-router-dom";
 
 const DEVICE_ID = "LUMI-001";
+const API_BASE = import.meta.env.VITE_API_BASE;
+const PHONE_FRONTEND = import.meta.env.VITE_PHONE_FRONTEND;
+
+type Mode = "loading" | "unlinked" | "linked";
 
 export default function DeviceLoginQR() {
   const navigate = useNavigate();
 
   const pollingRef = useRef<number | null>(null);
-  const codeGeneratedRef = useRef(false); // 🔒 ABSOLUTE KEY
+  const codeGeneratedRef = useRef(false);
 
+  const [mode, setMode] = useState<Mode>("loading");
   const [code, setCode] = useState<string | null>(null);
-  const [linked, setLinked] = useState<boolean | null>(null);
 
   /* --------------------------------
-     1️⃣ INITIAL STATUS CHECK (ONCE)
+     1️⃣ INITIAL STATUS CHECK
   --------------------------------*/
   useEffect(() => {
-    const init = async () => {
-      const res = await fetch(
-        `/api/auth/device/status?device_id=${DEVICE_ID}`
-      );
+    let cancelled = false;
 
-      if (!res.ok) {
-        console.error("Status check failed");
-        return;
-      }
-
-      const data = await res.json();
-      setLinked(data.linked);
-
-      // ✅ If already linked → STOP HERE
-      if (data.linked) return;
-
-      // 🔒 Generate QR ONLY ONCE
-      if (!codeGeneratedRef.current) {
-        codeGeneratedRef.current = true;
-
-        const codeRes = await fetch(
-          `/auth/device/code?device_id=${DEVICE_ID}`,
-          { method: "POST" }
+    async function init() {
+      try {
+        const res = await fetch(
+          `${API_BASE}/auth/device/status?device_id=${DEVICE_ID}`
         );
+        if (!res.ok) throw new Error("Status check failed");
 
-        const codeData = await codeRes.json();
+        const data = await res.json();
+        if (cancelled) return;
 
-        if (codeData.code) {
-          setCode(codeData.code);
+        if (data.linked) {
+          setMode("linked");
+          return;
         }
+
+        setMode("unlinked");
+
+        if (!codeGeneratedRef.current) {
+          codeGeneratedRef.current = true;
+
+          const codeRes = await fetch(
+            `${API_BASE}/auth/device/code?device_id=${DEVICE_ID}`,
+            { method: "POST" }
+          );
+
+          const codeData = await codeRes.json();
+          if (codeData.code) {
+            setCode(codeData.code);
+          }
+        }
+      } catch (err) {
+        console.error(err);
       }
-    };
+    }
 
     init();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   /* --------------------------------
-     2️⃣ POLLING (ONLY IF NOT LINKED)
+     2️⃣ POLLING (ONLY WHEN UNLINKED)
   --------------------------------*/
   useEffect(() => {
-    if (linked !== false) return;
+    if (mode !== "unlinked") return;
 
     const poll = async () => {
-      const res = await fetch(
-        `/api/auth/device/status?device_id=${DEVICE_ID}`
-      );
+      try {
+        const res = await fetch(
+          `${API_BASE}/auth/device/status?device_id=${DEVICE_ID}`
+        );
+        if (!res.ok) return;
 
-      if (!res.ok) return;
+        const data = await res.json();
+        if (data.linked) {
+          setMode("linked");
+          navigate("/mirror", { replace: true });
+          return;
+        }
 
-      const data = await res.json();
-
-      if (data.linked) {
-        setLinked(true);
-        navigate("/mirror", { replace: true });
-        return;
+        pollingRef.current = window.setTimeout(poll, 2000);
+      } catch {
+        pollingRef.current = window.setTimeout(poll, 2000);
       }
-
-      pollingRef.current = window.setTimeout(poll, 2000);
     };
 
     poll();
 
     return () => {
-      if (pollingRef.current) clearTimeout(pollingRef.current);
+      if (pollingRef.current) {
+        clearTimeout(pollingRef.current);
+        pollingRef.current = null;
+      }
     };
-  }, [linked, navigate]);
+  }, [mode, navigate]);
 
   /* --------------------------------
-     3️⃣ LOGOUT
+     3️⃣ DEVICE LOGOUT (SAFE)
   --------------------------------*/
   const logout = async () => {
-    await fetch(`/api/auth/device/unlink?device_id=${DEVICE_ID}`, {
-      method: "POST",
-    });
+    // 🔥 FIX: stop polling FIRST
+    if (pollingRef.current) {
+      clearTimeout(pollingRef.current);
+      pollingRef.current = null;
+    }
 
+    await fetch(
+      `${API_BASE}/auth/device/unlink?device_id=${DEVICE_ID}`,
+      { method: "POST" }
+    );
+
+    // reset state cleanly
     codeGeneratedRef.current = false;
     setCode(null);
-    setLinked(false);
+    setMode("unlinked");
   };
 
   /* --------------------------------
      UI
   --------------------------------*/
 
-  // 🔄 Loading
-  if (linked === null) {
+  if (mode === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-400 bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-black text-gray-400">
         Checking device…
       </div>
     );
   }
 
-  // ✅ Already logged in
-  if (linked === true) {
+  if (mode === "linked") {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4 text-white">
         <div className="text-xl">✅ Mirror already linked</div>
@@ -133,7 +155,6 @@ export default function DeviceLoginQR() {
     );
   }
 
-  // ❌ Not linked yet → QR
   if (!code) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-gray-400">
@@ -142,11 +163,7 @@ export default function DeviceLoginQR() {
     );
   }
 
-  const PHONE_FRONTEND = import.meta.env.VITE_PHONE_FRONTEND;
-
-const qrUrl = `${PHONE_FRONTEND}/device-login?code=${code}`;
-
-
+  const qrUrl = `${PHONE_FRONTEND}/login?redirect=/photos&code=${code}`;
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6">

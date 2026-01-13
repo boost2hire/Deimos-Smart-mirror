@@ -41,9 +41,13 @@ export function useLumiState() {
         console.log("[LUMI] WS message:", data);
 
         // 🎤 STATE
-        if (data.state) {
+      if (data.type === "state" && data.state === "idle") {
+          setTimeout(() => setState("idle"), 300);
+        } else if (data.type === "state") {
           setState(data.state as LumiState);
         }
+
+
 
         // 🗣 RESPONSE
         if (data.type === "response") {

@@ -1,139 +1,152 @@
-import { Console } from "console";
 import { useEffect, useRef, useState } from "react";
 import QRCode from "react-qr-code";
 import { useNavigate } from "react-router-dom";
 
 const DEVICE_ID = "LUMI-001";
-
-// 🔥 IMPORTANT: explicit URLs
 const BACKEND_BASE = import.meta.env.VITE_BACKEND_URL;
 const PHONE_FRONTEND = import.meta.env.VITE_PHONE_FRONTEND;
 
 type DeviceState = "loading" | "unlinked" | "linked";
+type MirrorMode = "idle" | "show_photos";
 
 export default function DeviceLoginQR() {
   const navigate = useNavigate();
 
-  const pollTimeoutRef = useRef<number | null>(null);
-  const qrGeneratedRef = useRef(false);
+  const pollRef = useRef<number | null>(null);
+  const codeGeneratedRef = useRef(false);
 
   const [deviceState, setDeviceState] = useState<DeviceState>("loading");
-  const [code, setCode] = useState<string | null>(null);
+  const [mirrorMode, setMirrorMode] = useState<MirrorMode>("idle");
+  const [deviceCode, setDeviceCode] = useState<string | null>(null);
+  const [galleryUrl, setGalleryUrl] = useState<string | null>(null);
 
-  /* --------------------------------
-     1️⃣ CHECK DEVICE STATUS (ONCE)
-  --------------------------------*/
+  /* ------------------------------------------------
+     1️⃣ INITIAL DEVICE STATUS CHECK (ONCE)
+  ------------------------------------------------ */
   useEffect(() => {
     const checkStatus = async () => {
       try {
         const res = await fetch(
-        `${BACKEND_BASE}/auth/device/status?device_id=${DEVICE_ID}`
-      );
-
-
+          `${BACKEND_BASE}/auth/device/status?device_id=${DEVICE_ID}`
+        );
         if (!res.ok) throw new Error("status failed");
 
         const data = await res.json();
         setDeviceState(data.linked ? "linked" : "unlinked");
       } catch (err) {
-        console.error("Device status error:", err);
-        setDeviceState("unlinked"); // fail-safe
+        console.error("Status error:", err);
+        setDeviceState("unlinked");
       }
     };
 
     checkStatus();
   }, []);
 
-  /* --------------------------------
-     2️⃣ GENERATE QR (ONLY IF UNLINKED)
-  --------------------------------*/
+  /* ------------------------------------------------
+     2️⃣ UNLINKED → GENERATE LOGIN QR (ONCE)
+  ------------------------------------------------ */
   useEffect(() => {
     if (deviceState !== "unlinked") return;
-    if (qrGeneratedRef.current) return;
+    if (codeGeneratedRef.current) return;
 
     const generateCode = async () => {
       try {
-        qrGeneratedRef.current = true;
+        codeGeneratedRef.current = true;
 
         const res = await fetch(
-        `${BACKEND_BASE}/auth/device/code?device_id=${DEVICE_ID}`,
-        { method: "POST" }
-      );
+          `${BACKEND_BASE}/auth/device/code?device_id=${DEVICE_ID}`,
+          { method: "POST" }
+        );
 
-        if (!res.ok) throw new Error("QR generation failed");
+        if (!res.ok) throw new Error("code failed");
 
         const data = await res.json();
-        if (data.code) setCode(data.code);
+        setDeviceCode(data.code);
       } catch (err) {
-        console.error("QR code generation error:", err);
+        console.error("QR error:", err);
       }
     };
 
     generateCode();
   }, [deviceState]);
 
-  /* --------------------------------
-     3️⃣ POLLING (WAIT FOR LINK)
-  --------------------------------*/
+  /* ------------------------------------------------
+     3️⃣ POLLING (READ-ONLY, SAFE)
+  ------------------------------------------------ */
   useEffect(() => {
     if (deviceState !== "unlinked") return;
 
     const poll = async () => {
       try {
         const res = await fetch(
-            `${BACKEND_BASE}/auth/device/status?device_id=${DEVICE_ID}`
-          );
-
-
+          `${BACKEND_BASE}/auth/device/status?device_id=${DEVICE_ID}`
+        );
         if (!res.ok) return;
 
         const data = await res.json();
-
         if (data.linked) {
           setDeviceState("linked");
-          navigate("/mirror", { replace: true });
           return;
         }
 
-        pollTimeoutRef.current = window.setTimeout(poll, 2000);
+        pollRef.current = window.setTimeout(poll, 2000);
       } catch {
-        pollTimeoutRef.current = window.setTimeout(poll, 2000);
+        pollRef.current = window.setTimeout(poll, 2000);
       }
     };
 
     poll();
 
     return () => {
-      if (pollTimeoutRef.current) {
-        clearTimeout(pollTimeoutRef.current);
+      if (pollRef.current) {
+        clearTimeout(pollRef.current);
+        pollRef.current = null;
       }
     };
-  }, [deviceState, navigate]);
+  }, [deviceState]);
 
-  /* --------------------------------
-     4️⃣ LOGOUT
-  --------------------------------*/
-  const logout = async () => {
+  /* ------------------------------------------------
+     4️⃣ USER ACTION: SHOW PHOTOS
+  ------------------------------------------------ */
+  const showPhotos = async () => {
     try {
-     await fetch(
-        `${BACKEND_BASE}/auth/device/unlink?device_id=${DEVICE_ID}`,
+      const res = await fetch(
+        `${BACKEND_BASE}/gallery/session/create-session?device_id=${DEVICE_ID}`,
         { method: "POST" }
       );
 
-    } catch(err) {
-          console.error(err)
-    }
+      if (!res.ok) throw new Error("gallery failed");
 
-    qrGeneratedRef.current = false;
-    setCode(null);
+      const data = await res.json();
+      setGalleryUrl(data.session_url);
+      setMirrorMode("show_photos");
+    } catch (err) {
+      console.error("Gallery error:", err);
+    }
+  };
+
+  /* ------------------------------------------------
+     5️⃣ USER ACTION: LOGOUT
+  ------------------------------------------------ */
+  const logout = async () => {
+    await fetch(
+      `${BACKEND_BASE}/auth/device/unlink?device_id=${DEVICE_ID}`,
+      { method: "POST" }
+    );
+
+    // reset everything cleanly
+    codeGeneratedRef.current = false;
+    setDeviceCode(null);
+    setGalleryUrl(null);
+    setMirrorMode("idle");
     setDeviceState("unlinked");
   };
 
-  /* --------------------------------
+  /* ------------------------------------------------
      UI
-  --------------------------------*/
+  ------------------------------------------------ */
 
-  // 🔄 Loading
+  // ⏳ LOADING
   if (deviceState === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-gray-400">
@@ -142,52 +155,79 @@ export default function DeviceLoginQR() {
     );
   }
 
-  // ✅ Linked
-  if (deviceState === "linked") {
+  // 🔑 UNLINKED → LOGIN QR
+  if (deviceState === "unlinked") {
+    if (!deviceCode) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-black text-gray-400">
+          Preparing login…
+        </div>
+      );
+    }
+
+    const loginQrUrl = `${PHONE_FRONTEND}/device-login?code=${deviceCode}`;
+
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4 text-white">
-        <div className="text-xl">✅ Mirror linked</div>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6 text-white">
+        <div className="text-lg">Scan to link your mirror</div>
+
+        <div className="bg-white p-4 rounded-xl">
+          <QRCode value={loginQrUrl} size={256} />
+        </div>
+
+        <div className="text-gray-400 tracking-widest text-sm">
+          {deviceCode}
+        </div>
+      </div>
+    );
+  }
+
+  // 🔒 LINKED → MIRROR HOME (DEFAULT)
+  if (deviceState === "linked" && mirrorMode === "idle") {
+    return (
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6 text-white">
+        <div className="text-xl">🪞 Mirror Ready</div>
+
+        <div className="text-gray-400">
+          Say “Hey Lumi” or choose an action
+        </div>
 
         <button
-          className="px-6 py-2 bg-green-600 rounded"
-          onClick={() => navigate("/mirror")}
+          className="px-6 py-2 bg-blue-600 rounded"
+          onClick={showPhotos}
         >
-          Go to Mirror
+          Show Photos
         </button>
 
         <button
           className="px-6 py-2 bg-red-600 rounded"
           onClick={logout}
         >
-          Logout
+          Unlink Device
         </button>
       </div>
     );
   }
 
-  // ⏳ Waiting for QR code
-  if (!code) {
+  // 📸 SHOW PHOTOS → QR
+  if (mirrorMode === "show_photos" && galleryUrl) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center text-gray-400">
-        Preparing login…
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6 text-white">
+        <div className="text-lg">Scan to view photos</div>
+
+        <div className="bg-white p-4 rounded-xl">
+          <QRCode value={galleryUrl} size={256} />
+        </div>
+
+        <button
+          className="px-6 py-2 bg-gray-600 rounded"
+          onClick={() => setMirrorMode("idle")}
+        >
+          Back
+        </button>
       </div>
     );
   }
 
-  // ❌ Unlinked → QR
-  const qrUrl = `${PHONE_FRONTEND}/device-login?code=${code}`;
-
-  return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6">
-      <div className="text-white text-lg">Scan to link your mirror</div>
-
-      <div className="bg-white p-4 rounded-xl">
-        <QRCode value={qrUrl} size={256} />
-      </div>
-
-      <div className="text-gray-400 tracking-widest text-sm">
-        {code}
-      </div>
-    </div>
-  );
+  return null;
 }
